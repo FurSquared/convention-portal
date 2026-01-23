@@ -1,0 +1,11 @@
+[Unit]
+Description=Auto-Update Scripts on USB mount
+Requires=media-portal.mount
+After=media-portal.mount
+
+[Service]
+Type=oneshot
+ExecStart=/media/system/update.sh
+
+[Install]
+WantedBy=media-portal.mount

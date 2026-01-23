@@ -1,0 +1,14 @@
+[Unit]
+Description=Media Ingest Service
+After=network-online.target
+
+
+[Service]
+Type=simple
+ExecStart=/media/system/ingester.sh
+EnvironmentFile=/media/system/vars.env
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

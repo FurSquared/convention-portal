@@ -166,9 +166,12 @@ echo "=== === === === === === === === === === === === === ==="
 
 echo "Restarting/enabling services..."
 systemctl daemon-reload
-systemctl enable --now pulseaudio.service
-systemctl enable --now stream.service
-systemctl enable --now ingest.service
+systemctl enable pulseaudio.service
+systemctl restart pulseaudio.service
+systemctl enable stream.service
+systemctl restart stream.service
+systemctl enable ingest.service
+systemctl restart ingest.service
 if ! [[ $usbname == "" ]];
 then
     systemctl enable --now mount-update.service

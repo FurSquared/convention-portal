@@ -120,12 +120,20 @@ if [ ! -z "$OUTPUT_SOURCE_AUDIO_DEV" ]; then
     sed -i "s|OUTPUT_SOURCE_AUDIO_DEV=.*|OUTPUT_SOURCE_AUDIO_DEV=$OUTPUT_SOURCE_AUDIO_DEV|g" ./vars.env
 fi
 
-existing_volume=$(grep -oP '^INPUT_SINK_VOLUME=\K.*' ./vars.env 2>/dev/null)
-existing_volume="${existing_volume:-100}"
-read -p "Enter sink volume percentage [$existing_volume]: " sink_volume
-sink_volume="${sink_volume:-$existing_volume}"
+existing_src_volume=$(grep -oP '^OUTPUT_SOURCE_VOLUME=\K.*' ./vars.env 2>/dev/null)
+existing_src_volume="${existing_src_volume:-100}"
+read -p "Enter source (capture) volume percentage [$existing_src_volume]: " src_volume
+src_volume="${src_volume:-$existing_src_volume}"
+sed -i "s|OUTPUT_SOURCE_VOLUME=.*|OUTPUT_SOURCE_VOLUME=$src_volume|g" ./vars.env
+if ! grep -q '^OUTPUT_SOURCE_VOLUME=' ./vars.env; then
+    echo "OUTPUT_SOURCE_VOLUME=$src_volume" >> ./vars.env
+fi
+
+existing_sink_volume=$(grep -oP '^INPUT_SINK_VOLUME=\K.*' ./vars.env 2>/dev/null)
+existing_sink_volume="${existing_sink_volume:-100}"
+read -p "Enter sink (playback) volume percentage [$existing_sink_volume]: " sink_volume
+sink_volume="${sink_volume:-$existing_sink_volume}"
 sed -i "s|INPUT_SINK_VOLUME=.*|INPUT_SINK_VOLUME=$sink_volume|g" ./vars.env
-# Add if missing
 if ! grep -q '^INPUT_SINK_VOLUME=' ./vars.env; then
     echo "INPUT_SINK_VOLUME=$sink_volume" >> ./vars.env
 fi

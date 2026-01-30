@@ -13,6 +13,8 @@ if ! pactl list short sources | grep -q "\.echo-cancel"; then
   pactl load-module module-echo-cancel
 fi
 pactl set-default-source $OUTPUT_SOURCE_AUDIO_DEV
+pactl set-source-volume 2 "${OUTPUT_SOURCE_VOLUME:-100}%"
+echo "Source volume: ${OUTPUT_SOURCE_VOLUME:-100}%"
 
 echo "F2 Con Portal - Version 0.1.1"
 echo "Copyright Jan 2026 Two Ferrets Co."

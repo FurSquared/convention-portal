@@ -89,3 +89,10 @@ You may safely re-run the install script again to adjust the configuration. (it 
 ## Custom offline image
 
 If you want a different 'Stream Offline' image, place a `custom-offline.jpg` file in this folder before running `install.sh`, or you could put it in and re-install. Either works.
+
+## Supported remote sources
+
+* RTPM : `rtmp://`
+* RTSP (will use TCP) `rtsp://` or `rtspt://`
+* HTTP/S `http://` or `https://` with `.m3u8` playlist
+

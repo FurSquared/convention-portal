@@ -25,7 +25,7 @@ echo "Output Destination: $OUTPUT_DEST : $OUTPUT_DEST_FORMAT ($OUTPUT_DEST_VIDEO
 ffmpeg -hide_banner -loglevel $OUTPUT_LOGLEVEL -stream_loop -1 -f $OUTPUT_SOURCE_VIDEO_TYPE -video_size $OUTPUT_SOURCE_VIDEO_RES\
  -framerate $OUTPUT_SOURCE_VIDEO_RATE -input_format mjpeg -rtbufsize 702000k -i $OUTPUT_SOURCE_VIDEO_DEV\
  -f $OUTPUT_SOURCE_AUDIO_TYPE -i $OUTPUT_SOURCE_AUDIO_DEV -map 0:v:0 -map 1:a:0 -g 30\
- -vf "scale=${OUTPUT_SOURCE_VIDEO_RES/x/:},drawtext=text='%{localtime\:%Y-%m-%d %H\:%M\:%S}':fontsize=24:fontcolor=white:borderw=2:bordercolor=black:x=(w-tw-10):y=10"\
+ -vf scale=${OUTPUT_SOURCE_VIDEO_RES/x/:},'drawtext=expansion=strftime:text=%Y-%m-%d %H\\:%M\\:%S:fontsize=24:fontcolor=white:borderw=2:bordercolor=black:x=(w-tw-10):y=10'\
  -vcodec $OUTPUT_DEST_VIDEO_CODEC -acodec $OUTPUT_DEST_AUDIO_CODEC $OUTPUT_EXTRA_ARGS -b:v $OUTPUT_DEST_VIDEO_BITRATE\
  -b:a $OUTPUT_DEST_AUDIO_BITRATE -f $OUTPUT_DEST_FORMAT -profile:v high422 -level 4.1\
  -tune $OUTPUT_DEST_TUNE -preset $OUTPUT_DEST_PRESET "$OUTPUT_DEST"

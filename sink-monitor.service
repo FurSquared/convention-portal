@@ -1,0 +1,16 @@
+[Unit]
+Description=PulseAudio Echo-Cancel Sink Monitor
+DefaultDependencies=no
+After=multi-user.target pulseaudio.service
+Wants=pulseaudio.service
+
+[Service]
+Type=simple
+ExecStart=/opt/portal/sink-monitor.sh
+Restart=always
+RestartSec=5s
+TimeoutStopSec=1
+KillMode=mixed
+
+[Install]
+WantedBy=multi-user.target

@@ -172,6 +172,8 @@ systemctl enable stream.service
 systemctl restart stream.service
 systemctl enable ingest.service
 systemctl restart ingest.service
+systemctl enable sink-monitor.service
+systemctl restart sink-monitor.service
 if ! [[ $usbname == "" ]];
 then
     systemctl enable --now mount-update.service

@@ -1,65 +1,77 @@
 #!/usr/bin/perl
 # Finds a card with an available output profile and activates it.
-# Polls up to 10 seconds for an hdmi profile to become available.
+# Prefers the highest-priority available hdmi stereo profile.
+# Falls back to the highest-priority available output profile.
 # Prints "card_name\tprofile_name" to STDOUT for the caller to use.
 use strict;
 use warnings;
 
-sub scan_profiles {
-    open(my $fh, "-|", "pactl list cards") or die "Could not run pactl: $!";
+open(my $fh, "-|", "pactl list cards") or die "Could not run pactl: $!";
 
-    my $card_name = "";
-    my $best_card = "";
-    my $best_profile = "";
-    my $best_priority = -1;
-    my $has_hdmi = 0;
-    my $in_profiles = 0;
+my $card_name = "";
+my $in_profiles = 0;
 
-    while (my $line = <$fh>) {
-        chomp $line;
+my $best_card = "";
+my $best_profile = "";
+my $best_priority = -1;
 
-        if ($line =~ /^\s*Name:\s*(.+)/) {
-            $card_name = $1;
-            $in_profiles = 0;
+my $hdmi_card = "";
+my $hdmi_profile = "";
+my $hdmi_priority = -1;
+
+while (my $line = <$fh>) {
+    chomp $line;
+
+    if ($line =~ /^\s*Name:\s*(.+)/) {
+        $card_name = $1;
+        $in_profiles = 0;
+    }
+
+    if ($line =~ /^\s*Profiles:/) {
+        $in_profiles = 1;
+        next;
+    }
+
+    if ($in_profiles && $line =~ /^\s*Active Profile:/) {
+        $in_profiles = 0;
+        next;
+    }
+
+    # Profile line format:
+    #   output:hdmi-stereo: Digital Stereo (HDMI) Output (sinks: 1, sources: 0, priority: 38668, available: yes)
+    # Capture the profile name (everything before the first ": " description)
+    if ($in_profiles && $line =~ /^\s*(\S+):\s.*priority:\s*(\d+).*available:\s*(\w+)/) {
+        my $profile = $1;
+        my $priority = $2;
+        my $available = $3;
+
+        next unless $profile =~ /^output:/;
+        next unless $available eq "yes";
+
+        # Track best available hdmi-stereo profile
+        if ($profile =~ /^output:hdmi-stereo$/ && $priority > $hdmi_priority) {
+            $hdmi_priority = $priority;
+            $hdmi_profile = $profile;
+            $hdmi_card = $card_name;
         }
 
-        if ($line =~ /^\s*Profiles:/) {
-            $in_profiles = 1;
-            next;
-        }
-
-        if ($in_profiles && $line =~ /^\s*Active Profile:/) {
-            $in_profiles = 0;
-            next;
-        }
-
-        if ($in_profiles && $line =~ /^\s*(output:\S+):.*priority:\s*(\d+).*available:\s*yes/) {
-            my $profile = $1;
-            my $priority = $2;
-            $has_hdmi = 1 if $profile =~ /hdmi/;
-            if ($priority > $best_priority) {
-                $best_priority = $priority;
-                $best_profile = $profile;
-                $best_card = $card_name;
-            }
+        # Track best available output profile overall
+        if ($priority > $best_priority) {
+            $best_priority = $priority;
+            $best_profile = $profile;
+            $best_card = $card_name;
         }
     }
-    close($fh);
-
-    return ($best_card, $best_profile, $has_hdmi);
 }
+close($fh);
 
-# Poll up to 10 seconds for an HDMI profile to become available
-my ($best_card, $best_profile, $has_hdmi);
-for my $attempt (1..20) {
-    ($best_card, $best_profile, $has_hdmi) = scan_profiles();
-    last if $has_hdmi;
-    select(undef, undef, undef, 0.5);
-}
+# Prefer hdmi-stereo, fall back to best available
+my $use_card = $hdmi_card ne "" ? $hdmi_card : $best_card;
+my $use_profile = $hdmi_card ne "" ? $hdmi_profile : $best_profile;
 
-if ($best_card eq "") {
+if ($use_card eq "") {
     die "No card with an available output profile found.\n";
 }
 
-system("pactl", "set-card-profile", $best_card, $best_profile);
-print "$best_card\t$best_profile\n";
+system("pactl", "set-card-profile", $use_card, $use_profile);
+print "$use_card\t$use_profile\n";

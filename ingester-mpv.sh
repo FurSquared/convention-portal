@@ -28,5 +28,5 @@ echo "Written by Anyah Maize (ana@missingtextures.net)"
 echo ""
 echo "=== === === === === === === === === === === === === ==="
 echo "Input Source: $INPUT_SOURCE"
-mpv --vo=gpu --gpu-context=drm --drm-connector=$(perl detect.pl) --ao=pulse "$INPUT_SOURCE"
+mpv --vo=gpu --gpu-context=drm --drm-connector=$(perl /opt/portal/detect.pl) --ao=pulse "$INPUT_SOURCE"
 echo 'Output Stopped.'

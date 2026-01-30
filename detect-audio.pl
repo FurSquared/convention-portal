@@ -7,20 +7,31 @@ if ($type ne "sources" && $type ne "sinks") {
     die "Usage: detect-audio.pl <sources|sinks>\n";
 }
 
-open(my $fh, "-|", "pactl list short $type") or die "Could not run pactl: $!";
-
-my @devices;
-while (my $line = <$fh>) {
-    chomp $line;
-    my @fields = split(/\t/, $line);
-    my $name = $fields[1] // next;
-
-    # Skip monitor sources (they mirror sinks, not real capture devices)
-    next if $type eq "sources" && $name =~ /\.monitor$/;
-
-    push @devices, $name;
+sub scan_devices {
+    open(my $fh, "-|", "pactl list short $type") or die "Could not run pactl: $!";
+    my @devs;
+    while (my $line = <$fh>) {
+        chomp $line;
+        my @fields = split(/\t/, $line);
+        my $name = $fields[1] // next;
+        next if $type eq "sources" && $name =~ /\.monitor$/;
+        push @devs, $name;
+    }
+    close($fh);
+    return @devs;
 }
-close($fh);
+
+# Poll up to 5 seconds for echo-cancel devices to appear
+my @devices;
+my $has_ec = 0;
+for my $attempt (1..10) {
+    @devices = scan_devices();
+    if (grep { /echo-cancel/ } @devices) {
+        $has_ec = 1;
+        last;
+    }
+    select(undef, undef, undef, 0.5);
+}
 
 if (@devices == 0) {
     die "No $type found.\n";

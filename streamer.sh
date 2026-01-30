@@ -1,5 +1,13 @@
 #!/bin/bash
 
+CARD_PROFILE=$(perl /opt/portal/detect-card-profile.pl)
+CARD_NAME=$(echo "$CARD_PROFILE" | cut -f1)
+PROFILE_NAME=$(echo "$CARD_PROFILE" | cut -f2)
+SINK_SUFFIX=${PROFILE_NAME#output:}
+BASE_SINK="${CARD_NAME}.${SINK_SUFFIX}"
+
+# Set the base sink before loading echo-cancel so it wraps the correct device
+pactl set-default-sink "$BASE_SINK"
 
 if ! pactl list short sources | grep -q "\.echo-cancel"; then
   pactl load-module module-echo-cancel

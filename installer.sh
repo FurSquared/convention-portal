@@ -38,6 +38,7 @@ for homedir in /home/*/; do
     fi
 done
 systemctl restart pulseaudio.service
+sg pulse-access -c "perl $(pwd)/detect-card-profile.pl"
 sg pulse-access -c "pactl load-module module-echo-cancel"
 
 

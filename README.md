@@ -84,3 +84,6 @@ After the first install, you may see the stream come alive. However, the audio s
 
 You may safely re-run the install script again to adjust the configuration. (it will retain the old configuration if you just press enter.)
 
+## Custom offline image
+
+If you want a different 'Stream Offline' image, place a `custom-offline.jpg` file in this folder before running `install.sh`, or you could put it in and re-install. Either works.

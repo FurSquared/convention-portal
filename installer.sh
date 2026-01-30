@@ -52,16 +52,34 @@ else
     cp ./vars.env.example ./vars.env
 fi
 
-read -p "Enter RTMP destination (e.g., rtmp://example.com/live/keyhere): " rtmp_dest
-read -p "Enter RTMP source (e.g., rtmp://example.com/live): " rtmp_source
+# Read existing values from vars.env
+existing_dest=$(grep -oP '^OUTPUT_DEST=\K.*' ./vars.env)
+existing_source=$(grep -oP '^INPUT_SOURCE=\K.*' ./vars.env)
 
-if [ ! -z "$rtmp_dest" ]; then
-    sed -i "s|OUTPUT_DEST=.*|OUTPUT_DEST=$rtmp_dest|g" ./vars.env
+# RTMP destination
+if [[ "$existing_dest" == *rtmp* ]]; then
+    read -p "Enter RTMP destination [$existing_dest]: " rtmp_dest
+    rtmp_dest="${rtmp_dest:-$existing_dest}"
+else
+    rtmp_dest=""
+    while [[ -z "$rtmp_dest" ]]; do
+        read -p "Enter RTMP destination (e.g., rtmp://example.com/live/keyhere): " rtmp_dest
+    done
 fi
 
-if [ ! -z "$rtmp_source" ]; then
-    sed -i "s|INPUT_SOURCE=.*|INPUT_SOURCE=$rtmp_source|g" ./vars.env
+# RTMP source
+if [[ "$existing_source" == *rtmp* ]]; then
+    read -p "Enter RTMP source [$existing_source]: " rtmp_source
+    rtmp_source="${rtmp_source:-$existing_source}"
+else
+    rtmp_source=""
+    while [[ -z "$rtmp_source" ]]; do
+        read -p "Enter RTMP source (e.g., rtmp://example.com/live): " rtmp_source
+    done
 fi
+
+sed -i "s|OUTPUT_DEST=.*|OUTPUT_DEST=$rtmp_dest|g" ./vars.env
+sed -i "s|INPUT_SOURCE=.*|INPUT_SOURCE=$rtmp_source|g" ./vars.env
 
 sed -i "s|OUTPUT_EXTRA_ARGS=|OUTPUT_EXTRA_ARGS=-af \"arnndn=m=model.rnnn\"|g" ./vars.env
 

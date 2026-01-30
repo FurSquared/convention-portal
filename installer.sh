@@ -46,9 +46,6 @@ echo "=== === === === === === === === === === === === === ==="
 
 
 echo "Configuring MPV ingester..."
-if [ ! -f ./ingester-ffmpeg.sh ]; then
-    cp ./ingester.sh ./ingester-ffmpeg.sh
-fi
 cp ./ingester-mpv.sh ./ingester.sh
 
 echo "Installing Neural Networks for FFMPEG..."

@@ -15,7 +15,7 @@ echo "=== === === === === === === === === === === === === ==="
 
 
 echo "Installing packages..."
-apt install iw ffmpeg btop nano v4l-utils pulseaudio pulseaudio-utils mpv git openssh-server perl
+DEBIAN_FRONTEND=noninteractive apt install -y iw ffmpeg btop nano v4l-utils pulseaudio pulseaudio-utils mpv git openssh-server perl
 
 
 echo "=== === === === === === === === === === === === === ==="

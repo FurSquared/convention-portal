@@ -29,6 +29,14 @@ done
 systemctl daemon-reload
 
 usermod -aG pulse-access root
+# Add the main non-root user to pulse-access and audio groups
+for homedir in /home/*/; do
+    username=$(basename "$homedir")
+    if id "$username" &>/dev/null; then
+        echo "Adding $username to pulse-access and audio groups..."
+        usermod -aG pulse-access,audio "$username"
+    fi
+done
 systemctl restart pulseaudio.service
 sg pulse-access -c "pactl load-module module-echo-cancel"
 

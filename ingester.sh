@@ -8,8 +8,10 @@ fi
 CARD_PROFILE=$(perl /opt/portal/detect-card-profile.pl)
 CARD_NAME=$(echo "$CARD_PROFILE" | cut -f1)
 PROFILE_NAME=$(echo "$CARD_PROFILE" | cut -f2)
+echo "Card profile set: $CARD_NAME -> $PROFILE_NAME"
 # Derive sink name from card name + profile suffix (e.g. output:hdmi-stereo -> hdmi-stereo)
 SINK_SUFFIX=${PROFILE_NAME#output:}
+echo "Setting default sink: ${CARD_NAME}.${SINK_SUFFIX}.echo-cancel"
 pactl set-default-sink "${CARD_NAME}.${SINK_SUFFIX}.echo-cancel"
 
 echo "F2 Con Portal - Version 0.1.1"

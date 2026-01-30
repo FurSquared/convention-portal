@@ -18,6 +18,16 @@ echo "Installing packages..."
 export PATH="$PATH:/sbin:/usr/sbin"
 DEBIAN_FRONTEND=noninteractive apt install -y iw ffmpeg btop nano v4l-utils pulseaudio pulseaudio-utils mpv git openssh-server perl
 
+echo "Restoring any missing services..."
+for svc in ./*.service; do
+    name=$(basename "$svc")
+    if [ ! -f "/etc/systemd/system/$name" ]; then
+        echo "  Reinstalling $name"
+        /bin/cp -f "$svc" /etc/systemd/system/
+    fi
+done
+systemctl daemon-reload
+
 usermod -aG pulse-access root
 systemctl restart pulseaudio.service
 

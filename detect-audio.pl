@@ -26,15 +26,23 @@ if (@devices == 0) {
     die "No $type found.\n";
 }
 
+my $default = 1;
+for my $i (0 .. $#devices) {
+    if ($devices[$i] =~ /echo-cancel/) {
+        $default = $i + 1;
+        last;
+    }
+}
+
 print STDERR "Available $type:\n";
 for my $i (0 .. $#devices) {
     printf STDERR "  [%d] %s\n", $i + 1, $devices[$i];
 }
-print STDERR "Select device [1]: ";
+print STDERR "Select device [$default]: ";
 
 my $choice = <STDIN>;
 chomp $choice if defined $choice;
-$choice = 1 if !defined $choice || $choice eq "";
+$choice = $default if !defined $choice || $choice eq "";
 
 if ($choice < 1 || $choice > scalar @devices) {
     die "Invalid selection.\n";

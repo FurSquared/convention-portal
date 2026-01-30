@@ -6,6 +6,9 @@ dist
 convention-portal
 convention-portal.tar.gz
 
+# Custom offline image override
+custom-offline.jpg
+
 # Downloaded during installation
 rnnoise-models
 model.rnnn

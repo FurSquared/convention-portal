@@ -28,5 +28,21 @@ echo "Written by Anyah Maize (ana@missingtextures.net)"
 echo ""
 echo "=== === === === === === === === === === === === === ==="
 echo "Input Source: $INPUT_SOURCE"
-mpv --vo=gpu --gpu-context=drm --drm-connector=$(perl /opt/portal/detect.pl) --ao=pulse "$INPUT_SOURCE"
-echo 'Output Stopped.'
+DRM_CONNECTOR=$(perl /opt/portal/detect.pl)
+STANDBY_IMAGE="/opt/portal/stream-offline.jpg"
+
+while true; do
+    mpv --vo=gpu --gpu-context=drm --drm-connector="$DRM_CONNECTOR" --ao=pulse "$INPUT_SOURCE"
+    echo "Stream ended or unavailable. Showing standby image."
+
+    mpv --vo=gpu --gpu-context=drm --drm-connector="$DRM_CONNECTOR" --loop=inf --no-audio "$STANDBY_IMAGE" &
+    IMG_PID=$!
+
+    while ! ffprobe -v quiet -timeout 5000000 -i "$INPUT_SOURCE"; do
+        sleep 5
+    done
+
+    echo "Stream is back online."
+    kill $IMG_PID 2>/dev/null
+    wait $IMG_PID 2>/dev/null
+done

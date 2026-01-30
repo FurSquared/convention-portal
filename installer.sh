@@ -121,6 +121,12 @@ mkdir -p /opt/portal
 /bin/cp -fp --remove-destination ./*.sh /opt/portal
 /bin/cp -fp --remove-destination ./*.pl /opt/portal
 /bin/cp -fp --remove-destination ./*.rnnn /opt/portal 2>/dev/null || true
+if [ -f ./custom-offline.jpg ]; then
+    echo "Using custom offline image."
+    /bin/cp -fp --remove-destination ./custom-offline.jpg /opt/portal/stream-offline.jpg
+else
+    /bin/cp -fp --remove-destination ./stream-offline.jpg /opt/portal/stream-offline.jpg
+fi
 /bin/cp -fp --remove-destination ./*.env /opt/portal
 
 /bin/cp -rf ./*.service /etc/systemd/system/

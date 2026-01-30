@@ -165,5 +165,5 @@ echo "Done."
 echo "=== === === === === === === === === === === === === ==="
 
 
-echo "Installation Complete."
+echo "Installation Complete. A reboot is recommended."
 

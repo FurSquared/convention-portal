@@ -17,6 +17,7 @@ pactl set-default-sink "$BASE_SINK"
 # Load echo-cancel for this sink if it doesn't exist yet
 if ! pactl list short sinks | grep -q "$EXPECTED_SINK"; then
     pactl load-module module-echo-cancel
+    sleep 1
 fi
 
 echo "Setting default sink: $EXPECTED_SINK"

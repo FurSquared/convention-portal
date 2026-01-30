@@ -46,12 +46,10 @@ echo "=== === === === === === === === === === === === === ==="
 
 
 echo "Configuring MPV ingester..."
-if [ -f ./ingester.sh ] && [ -f ./ingester-ffmpeg.sh ]; then
-    echo "Ingester already configured (re-run detected)"
-else
+if [ ! -f ./ingester-ffmpeg.sh ]; then
     cp ./ingester.sh ./ingester-ffmpeg.sh
-    cp ./ingester-mpv.sh ./ingester.sh
 fi
+cp ./ingester-mpv.sh ./ingester.sh
 
 echo "Installing Neural Networks for FFMPEG..."
 if [ -d "rnnoise-models" ]; then

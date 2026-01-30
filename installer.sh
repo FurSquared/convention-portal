@@ -65,12 +65,17 @@ sed -i "s|OUTPUT_EXTRA_ARGS=|OUTPUT_EXTRA_ARGS=-af \"arnndn=m=model.rnnn\"|g" ./
 echo "=== === === === === === === === === === === === === ==="
 
 
-lsblk
-read -p "Please enter the USB to be used for updates (Enter to skip): " usbname
-if ! [[ $usbname == "" ]];
-then
-    uuid=$(blkid -t TYPE=vfat -sUUID | grep $usbname | sed -nE 's/.* UUID="(.*?)"/\1/p')
-    echo "UUID=$uuid  /media/portal   vfat    defaults,auto,user,nofail       0       0" >> /etc/fstab
+read -p "Configure USB drive for update files? (y/n): " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    lsblk
+    read -p "Please enter the USB device to be used for updates: " usbname
+    if ! [[ $usbname == "" ]]; then
+        uuid=$(blkid -t TYPE=vfat -sUUID | grep $usbname | sed -nE 's/.* UUID="(.*?)"/\1/p')
+        echo "UUID=$uuid  /media/portal   vfat    defaults,auto,user,nofail       0       0" >> /etc/fstab
+    fi
+else
+    usbname=""
 fi
 
 

@@ -11,7 +11,7 @@ ExecStart=/opt/portal/streamer.sh
 EnvironmentFile=/opt/portal/vars.env
 Restart=always
 RestartSec=5s
-TimeoutStopSec=5
+TimeoutStopSec=1
 KillMode=mixed
 KillSignal=SIGINT
 

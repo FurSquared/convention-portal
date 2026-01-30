@@ -37,6 +37,24 @@ if (@devices == 0) {
     die "No $type found.\n";
 }
 
+# Deduplicate echo-cancel devices: if a bare echo-cancel exists (no .\d+ suffix),
+# hide all numbered variants. Otherwise keep only the lowest-numbered one.
+my $has_bare_ec = grep { /echo-cancel$/ } @devices;
+if ($has_bare_ec) {
+    @devices = grep { !/echo-cancel\.\d+$/ } @devices;
+} else {
+    my %seen_ec_base;
+    my @filtered;
+    for my $dev (@devices) {
+        if ($dev =~ /^(.+\.echo-cancel)\.\d+$/) {
+            my $base = $1;
+            next if $seen_ec_base{$base}++;
+        }
+        push @filtered, $dev;
+    }
+    @devices = @filtered;
+}
+
 my $default = 1;
 for my $i (0 .. $#devices) {
     if ($devices[$i] =~ /echo-cancel/) {

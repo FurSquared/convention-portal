@@ -80,6 +80,8 @@ Done.
 Installation Complete. A reboot is recommended.
 ```
 
+**Warning** If you don't see the echo-cancel option (which should be auto selected), then Ctrl+C and restart the install script again. 
+
 After the first install, you may see the stream come alive. However, the audio system might not be perfectly set up, so run `/sbin/reboot` as root.
 
 You may safely re-run the install script again to adjust the configuration. (it will retain the old configuration if you just press enter.)

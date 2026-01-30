@@ -115,29 +115,6 @@ fi
 echo "=== === === === === === === === === === === === === ==="
 
 
-read -p "Configure USB drive for update files? (y/n): " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    lsblk
-    read -p "Please enter the USB device to be used for updates: " usbname
-    if ! [[ $usbname == "" ]]; then
-        uuid=$(blkid -t TYPE=vfat -sUUID | grep $usbname | sed -nE 's/.* UUID="(.*?)"/\1/p')
-        if [[ -z "$uuid" ]]; then
-            echo "WARNING: Could not determine UUID for $usbname, skipping fstab entry."
-        else
-            # Remove any existing /media/portal entries before adding
-            sed -i '\|/media/portal|d' /etc/fstab
-            echo "UUID=$uuid  /media/portal   vfat    defaults,auto,user,nofail       0       0" >> /etc/fstab
-        fi
-    fi
-else
-    usbname=""
-fi
-
-
-echo "=== === === === === === === === === === === === === ==="
-
-
 echo "Copying files..."
 
 mkdir -p /opt/portal
@@ -145,18 +122,6 @@ mkdir -p /opt/portal
 /bin/cp -fp --remove-destination ./*.pl /opt/portal
 /bin/cp -fp --remove-destination ./*.rnnn /opt/portal 2>/dev/null || true
 /bin/cp -fp --remove-destination ./*.env /opt/portal
-
-mkdir -p /media/portal
-if ! [[ $usbname == "" ]];
-then
-	if [[ $usbname == /dev/* ]];
-	then
-		mount $usbname /media/portal
-	else
-		mount /dev/$usbname /media/portal
-	fi
-    /bin/cp -fp --remove-destination /opt/portal/* /media/portal
-fi
 
 /bin/cp -rf ./*.service /etc/systemd/system/
 echo "Done."
@@ -175,13 +140,6 @@ systemctl enable ingest.service
 systemctl restart ingest.service
 systemctl enable sink-monitor.service
 systemctl restart sink-monitor.service
-if ! [[ $usbname == "" ]];
-then
-    systemctl enable --now mount-update.service
-else
-	echo "Mount Update Service disabled. Updates are manual."
-    systemctl disable --now mount-update.service
-fi
 echo "Done."
 
 

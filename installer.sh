@@ -76,30 +76,30 @@ fi
 existing_dest=$(grep -oP '^OUTPUT_DEST=\K.*' ./vars.env)
 existing_source=$(grep -oP '^INPUT_SOURCE=\K.*' ./vars.env)
 
-# RTMP destination
-if [[ "$existing_dest" == *rtmp* ]]; then
-    read -p "Enter RTMP destination [$existing_dest]: " rtmp_dest
-    rtmp_dest="${rtmp_dest:-$existing_dest}"
+# Stream destination (RTMP output)
+if [[ -n "$existing_dest" ]]; then
+    read -p "Enter stream destination [$existing_dest]: " stream_dest
+    stream_dest="${stream_dest:-$existing_dest}"
 else
-    rtmp_dest=""
-    while [[ -z "$rtmp_dest" ]]; do
-        read -p "Enter RTMP destination (e.g., rtmp://example.com/live/keyhere): " rtmp_dest
+    stream_dest=""
+    while [[ -z "$stream_dest" ]]; do
+        read -p "Enter stream destination (e.g., rtmp://example.com/live/keyhere): " stream_dest
     done
 fi
 
-# RTMP source
-if [[ "$existing_source" == *rtmp* ]]; then
-    read -p "Enter RTMP source [$existing_source]: " rtmp_source
-    rtmp_source="${rtmp_source:-$existing_source}"
+# Stream source (RTMP or RTSP input)
+if [[ -n "$existing_source" ]]; then
+    read -p "Enter stream source [$existing_source]: " stream_source
+    stream_source="${stream_source:-$existing_source}"
 else
-    rtmp_source=""
-    while [[ -z "$rtmp_source" ]]; do
-        read -p "Enter RTMP source (e.g., rtmp://example.com/live): " rtmp_source
+    stream_source=""
+    while [[ -z "$stream_source" ]]; do
+        read -p "Enter stream source (e.g., rtmp://example.com/live or rtspt://example.com/stream): " stream_source
     done
 fi
 
-sed -i "s|OUTPUT_DEST=.*|OUTPUT_DEST=$rtmp_dest|g" ./vars.env
-sed -i "s|INPUT_SOURCE=.*|INPUT_SOURCE=$rtmp_source|g" ./vars.env
+sed -i "s|OUTPUT_DEST=.*|OUTPUT_DEST=$stream_dest|g" ./vars.env
+sed -i "s|INPUT_SOURCE=.*|INPUT_SOURCE=$stream_source|g" ./vars.env
 
 sed -i 's|OUTPUT_EXTRA_ARGS=.*|OUTPUT_EXTRA_ARGS=-af arnndn=m=/opt/portal/model.rnnn|g' ./vars.env
 

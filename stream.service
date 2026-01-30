@@ -7,8 +7,8 @@ Wants=network-online.target pulseaudio.service
 
 [Service]
 Type=simple
-ExecStart=/media/system/streamer.sh
-EnvironmentFile=/media/system/vars.env
+ExecStart=/opt/portal/streamer.sh
+EnvironmentFile=/opt/portal/vars.env
 Restart=always
 RestartSec=5s
 

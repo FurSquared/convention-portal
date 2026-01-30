@@ -7,8 +7,8 @@ Wants=network-online.target pulseaudio.service
 
 [Service]
 Type=simple
-ExecStart=/media/system/ingester.sh
-EnvironmentFile=/media/system/vars.env
+ExecStart=/opt/portal/ingester.sh
+EnvironmentFile=/opt/portal/vars.env
 Restart=always
 RestartSec=5s
 

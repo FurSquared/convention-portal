@@ -1,26 +1,26 @@
 #!/bin/sh
 
 logger "Fetching scripts from USB..."
-cp /media/portal/ingester.sh /media/system/ingester.tmp
-cp /media/portal/streamer.sh /media/system/streamer.tmp
-cp /media/portal/vars.env /media/system/vars.tmp
-cp /media/portal/update.sh /media/system/update.tmp
+cp /media/portal/ingester.sh /opt/portal/ingester.tmp
+cp /media/portal/streamer.sh /opt/portal/streamer.tmp
+cp /media/portal/vars.env /opt/portal/vars.tmp
+cp /media/portal/update.sh /opt/portal/update.tmp
 logger " Done."
 
 logger "Setting Script Access Modes..."
-if ! chmod +x "/media/system/ingester.tmp"; then
+if ! chmod +x "/opt/portal/ingester.tmp"; then
     logger -p "error" "Failed to make ingester executable."
 fi
-if ! chmod +x "/media/system/streamer.tmp"; then
+if ! chmod +x "/opt/portal/streamer.tmp"; then
     logger -p "error" "Failed to make streamer executable."
 fi
-if ! chmod +x "/media/system/update.tmp"; then
+if ! chmod +x "/opt/portal/update.tmp"; then
     logger -p "error" "Failed to make updater executable."
 fi
 logger "Done."
 
 logger "Updating Env Vars File..."
-if mv "/media/system/vars.tmp" "/media/system/vars.env"; then
+if mv "/opt/portal/vars.tmp" "/opt/portal/vars.env"; then
   logger "Done. Update complete."
   #rm "vars.tmp"
 else
@@ -29,7 +29,7 @@ fi
 
 logger "Updating Ingester..."
 systemctl stop ingest.service
-if mv "/media/system/ingester.tmp" "/media/system/ingester.sh"; then
+if mv "/opt/portal/ingester.tmp" "/opt/portal/ingester.sh"; then
   logger "Done. Update complete."
   systemctl start ingest.service
   #rm "ingester.tmp"
@@ -39,7 +39,7 @@ fi
 
 logger "Updating Streamer..."
 systemctl stop stream.service
-if mv "/media/system/streamer.tmp" "/media/system/streamer.sh"; then
+if mv "/opt/portal/streamer.tmp" "/opt/portal/streamer.sh"; then
   logger "Done. Update complete."
   systemctl start stream.service
   #rm "streamer.tmp"
@@ -51,7 +51,7 @@ logger "Updating Updater..."
 cat > /tmp/updateScript.sh << EOF
 #!/bin/bash
 # Overwrite old file with new
-if mv "/media/system/update.tmp" "/media/system/update.sh"; then
+if mv "/opt/portal/update.tmp" "/opt/portal/update.sh"; then
   logger "Done. Update complete."
   #rm "update.tmp"
   rm "/tmp/updateScript.sh"

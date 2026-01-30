@@ -92,7 +92,7 @@ fi
 sed -i "s|OUTPUT_DEST=.*|OUTPUT_DEST=$rtmp_dest|g" ./vars.env
 sed -i "s|INPUT_SOURCE=.*|INPUT_SOURCE=$rtmp_source|g" ./vars.env
 
-sed -i 's|OUTPUT_EXTRA_ARGS=.*|OUTPUT_EXTRA_ARGS=-af arnndn=m=model.rnnn|g' ./vars.env
+sed -i 's|OUTPUT_EXTRA_ARGS=.*|OUTPUT_EXTRA_ARGS=-af arnndn=m=/opt/portal/model.rnnn|g' ./vars.env
 
 echo ""
 echo "Select the OUTPUT audio source (capture device for streaming):"
@@ -138,11 +138,11 @@ echo "=== === === === === === === === === === === === === ==="
 
 echo "Copying files..."
 
-mkdir -p /media/system
-/bin/cp -fp --remove-destination ./*.sh /media/system
-/bin/cp -fp --remove-destination ./*.pl /media/system
-/bin/cp -fp --remove-destination ./*.rnnn /media/system 2>/dev/null || true
-/bin/cp -fp --remove-destination ./*.env /media/system
+mkdir -p /opt/portal
+/bin/cp -fp --remove-destination ./*.sh /opt/portal
+/bin/cp -fp --remove-destination ./*.pl /opt/portal
+/bin/cp -fp --remove-destination ./*.rnnn /opt/portal 2>/dev/null || true
+/bin/cp -fp --remove-destination ./*.env /opt/portal
 
 mkdir -p /media/portal
 if ! [[ $usbname == "" ]];
@@ -153,7 +153,7 @@ then
 	else
 		mount /dev/$usbname /media/portal
 	fi
-    /bin/cp -fp --remove-destination /media/system/* /media/portal
+    /bin/cp -fp --remove-destination /opt/portal/* /media/portal
 fi
 
 /bin/cp -rf ./*.service /etc/systemd/system/

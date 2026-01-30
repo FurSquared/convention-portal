@@ -1,11 +1,9 @@
-#!/bin/sh
+#!/bin/bash
 
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 
+   echo "This script must be run as root"
    exit 1
 fi
-
-# TODO: Someone PLEASE rewrite this. This is awful. It works though.
 
 echo "F2 Con Portal - Version 0.1.1"
 echo "Copyright Jan 2026 Two Ferrets Co."
@@ -16,46 +14,101 @@ echo ""
 echo "=== === === === === === === === === === === === === ==="
 
 
-read -p "System will install packages. Continue? " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]];
-then
-    [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
-fi
-apt install iwp ffmpeg btop nano video4linux2 pulseaudio pulseaudio-utils mpv git openssh-server perl
+echo "Installing packages..."
+export PATH="$PATH:/sbin:/usr/sbin"
+DEBIAN_FRONTEND=noninteractive apt install -y iw ffmpeg btop nano v4l-utils pulseaudio pulseaudio-utils mpv git openssh-server perl
+
+echo "Restoring any missing services..."
+for svc in ./*.service; do
+    name=$(basename "$svc")
+    if [ ! -f "/etc/systemd/system/$name" ]; then
+        echo "  Reinstalling $name"
+        /bin/cp -f "$svc" /etc/systemd/system/
+    fi
+done
+systemctl daemon-reload
+
+usermod -aG pulse-access root
+# Add the main non-root user to pulse-access and audio groups
+for homedir in /home/*/; do
+    username=$(basename "$homedir")
+    if id "$username" &>/dev/null; then
+        echo "Adding $username to pulse-access and audio groups..."
+        usermod -aG pulse-access,audio "$username"
+    fi
+done
+systemctl restart pulseaudio.service
+sg pulse-access -c "perl $(pwd)/detect-card-profile.pl"
+sg pulse-access -c "pactl load-module module-echo-cancel"
 
 
 echo "=== === === === === === === === === === === === === ==="
 
 
-read -p "Is MPV preferred over FFPLAY? " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]];
-then
+echo "Configuring MPV ingester..."
+if [ -f ./ingester.sh ] && [ -f ./ingester-ffmpeg.sh ]; then
+    echo "Ingester already configured (re-run detected)"
+else
     cp ./ingester.sh ./ingester-ffmpeg.sh
-	cp ./ingester-mpv.sh ./ingester.sh
+    cp ./ingester-mpv.sh ./ingester.sh
 fi
 
-read -p "Is Neural Networks in FFMPEG wanted? " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]];
-then
+echo "Installing Neural Networks for FFMPEG..."
+if [ -d "rnnoise-models" ]; then
+    echo "rnnoise-models already exists, skipping clone..."
+else
     git clone https://github.com/GregorR/rnnoise-models
-	cp ./-models/somnolent-hogwash-2018-09-01/sh.rnnn model.rnnn
-	rm -rf rnnoise-models
-	sed -i -e 's/OUTPUT_EXTRA_ARGS=/OUTPUT_EXTRA_ARGS=-af "arnndn=m='rnnoise-models/somnolent-hogwash-2018-09-01/sh.rnnn'"/g' /vars.env
 fi
+cp ./rnnoise-models/somnolent-hogwash-2018-09-01/sh.rnnn model.rnnn
 
 
 echo "=== === === === === === === === === === === === === ==="
 
 
-lsblk
-read -p "Please enter the USB to be used for updates (Enter to skip): " usbname
-if ![[ $usbname == "" ]];
-then 
-    uuid=$(blkid -t TYPE=vfat -sUUID | grep $usbname | sed -nE 's/.* UUID="(.*?)"/\1/p')
-    echo "UUID=$uuid  /media/portal   vfat    defaults,auto,user,nofail       0       0" >> /etc/fstab
+echo "Configuring vars.env..."
+if [ -f ./vars.env ]; then
+    echo "vars.env already exists, skipping..."
+else
+    cp ./vars.env.example ./vars.env
+fi
+
+# Read existing values from vars.env
+existing_dest=$(grep -oP '^OUTPUT_DEST=\K.*' ./vars.env)
+existing_source=$(grep -oP '^INPUT_SOURCE=\K.*' ./vars.env)
+
+# RTMP destination
+if [[ "$existing_dest" == *rtmp* ]]; then
+    read -p "Enter RTMP destination [$existing_dest]: " rtmp_dest
+    rtmp_dest="${rtmp_dest:-$existing_dest}"
+else
+    rtmp_dest=""
+    while [[ -z "$rtmp_dest" ]]; do
+        read -p "Enter RTMP destination (e.g., rtmp://example.com/live/keyhere): " rtmp_dest
+    done
+fi
+
+# RTMP source
+if [[ "$existing_source" == *rtmp* ]]; then
+    read -p "Enter RTMP source [$existing_source]: " rtmp_source
+    rtmp_source="${rtmp_source:-$existing_source}"
+else
+    rtmp_source=""
+    while [[ -z "$rtmp_source" ]]; do
+        read -p "Enter RTMP source (e.g., rtmp://example.com/live): " rtmp_source
+    done
+fi
+
+sed -i "s|OUTPUT_DEST=.*|OUTPUT_DEST=$rtmp_dest|g" ./vars.env
+sed -i "s|INPUT_SOURCE=.*|INPUT_SOURCE=$rtmp_source|g" ./vars.env
+
+sed -i 's|OUTPUT_EXTRA_ARGS=.*|OUTPUT_EXTRA_ARGS=-af arnndn=m=/opt/portal/model.rnnn|g' ./vars.env
+
+echo ""
+echo "Select the OUTPUT audio source (capture device for streaming):"
+OUTPUT_SOURCE_AUDIO_DEV=$(sg pulse-access -c "perl detect-audio.pl sources")
+
+if [ ! -z "$OUTPUT_SOURCE_AUDIO_DEV" ]; then
+    sed -i "s|OUTPUT_SOURCE_AUDIO_DEV=.*|OUTPUT_SOURCE_AUDIO_DEV=$OUTPUT_SOURCE_AUDIO_DEV|g" ./vars.env
 fi
 
 
@@ -64,26 +117,13 @@ echo "=== === === === === === === === === === === === === ==="
 
 echo "Copying files..."
 
-mkdir /media/system
-/bin/cp -rf ./*.sh /media/system
-/bin/cp -rf ./*.pl /media/system
-/bin/cp -rf ./*.rnnn /media/system
-/bin/cp -rf ./*.env /media/system
-
-mkdir /media/portal
-if ![[ $usbname == "" ]];
-then 
-	if [[ $usbname == /dev/* ]];
-	then
-		mount $usbname /media/portal
-	else
-		mount /dev/$usbname /media/portal
-	fi
-    cp /media/system/* /media/portal
-fi
+mkdir -p /opt/portal
+/bin/cp -fp --remove-destination ./*.sh /opt/portal
+/bin/cp -fp --remove-destination ./*.pl /opt/portal
+/bin/cp -fp --remove-destination ./*.rnnn /opt/portal 2>/dev/null || true
+/bin/cp -fp --remove-destination ./*.env /opt/portal
 
 /bin/cp -rf ./*.service /etc/systemd/system/
-/bin/cp -rf ./*rules /etc/udev/rules.d/
 echo "Done."
 
 
@@ -92,21 +132,19 @@ echo "=== === === === === === === === === === === === === ==="
 
 echo "Restarting/enabling services..."
 systemctl daemon-reload
-systemctl enable --now pulseaudio.service
-systemctl enable --now stream.service
-systemctl enable --now ingest.service
-if ![[ $usbname == "" ]];
-then 
-    systemctl enable --now mount-update.service
-else
-	echo "Mount Update Service disabled. Updates are manual."
-    systemctl disable --now mount-update.service
-fi
+systemctl enable pulseaudio.service
+systemctl restart pulseaudio.service
+systemctl enable stream.service
+systemctl restart stream.service
+systemctl enable ingest.service
+systemctl restart ingest.service
+systemctl enable sink-monitor.service
+systemctl restart sink-monitor.service
 echo "Done."
 
 
 echo "=== === === === === === === === === === === === === ==="
 
 
-echo "Installation Complete."
+echo "Installation Complete. A reboot is recommended."
 

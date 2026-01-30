@@ -1,5 +1,10 @@
 [Unit]
 Description=PulseAudio system server
+DefaultDependencies=no
+After=multi-user.target
+Wants=multi-user.target
+Conflicts=shutdown.target
+Before=shutdown.target
 
 [Service]
 Type=notify

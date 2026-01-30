@@ -1,14 +1,21 @@
 [Unit]
 Description=Media Stream Service
-After=network-online.target
+DefaultDependencies=no
+After=multi-user.target network-online.target pulseaudio.service
+Wants=network-online.target pulseaudio.service
+Conflicts=shutdown.target
+Before=shutdown.target
 
 
 [Service]
 Type=simple
-ExecStart=/media/system/streamer.sh
-EnvironmentFile=/media/system/vars.env
+ExecStart=/opt/portal/streamer.sh
+EnvironmentFile=/opt/portal/vars.env
 Restart=always
 RestartSec=5s
+TimeoutStopSec=1
+KillMode=mixed
+KillSignal=SIGINT
 
 [Install]
 WantedBy=multi-user.target

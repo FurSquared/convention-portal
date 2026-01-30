@@ -29,6 +29,8 @@ echo "Written by Anyah Maize (ana@missingtextures.net)"
 echo ""
 echo "=== === === === === === === === === === === === === ==="
 echo "Input Source: $INPUT_SOURCE"
+pactl set-sink-volume 0 "${INPUT_SINK_VOLUME:-100}%"
+echo "Sink volume: ${INPUT_SINK_VOLUME:-100}%"
 DRM_CONNECTOR=$(perl /opt/portal/detect.pl)
 STANDBY_IMAGE="/opt/portal/stream-offline.jpg"
 

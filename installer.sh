@@ -104,7 +104,13 @@ fi
 sed -i "s|OUTPUT_DEST=.*|OUTPUT_DEST=$stream_dest|g" ./vars.env
 sed -i "s|INPUT_SOURCE=.*|INPUT_SOURCE=$stream_source|g" ./vars.env
 
-sed -i 's|OUTPUT_EXTRA_ARGS=.*|OUTPUT_EXTRA_ARGS=-af arnndn=m=/opt/portal/model.rnnn|g' ./vars.env
+read -p "Enable noise reduction audio filter? (y/n) [n]: " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    sed -i 's|OUTPUT_EXTRA_ARGS=.*|OUTPUT_EXTRA_ARGS=-af arnndn=m=/opt/portal/model.rnnn|g' ./vars.env
+else
+    sed -i 's|OUTPUT_EXTRA_ARGS=.*|OUTPUT_EXTRA_ARGS=|g' ./vars.env
+fi
 
 echo ""
 echo "Select the OUTPUT audio source (capture device for streaming):"
@@ -112,6 +118,16 @@ OUTPUT_SOURCE_AUDIO_DEV=$(sg pulse-access -c "perl detect-audio.pl sources")
 
 if [ ! -z "$OUTPUT_SOURCE_AUDIO_DEV" ]; then
     sed -i "s|OUTPUT_SOURCE_AUDIO_DEV=.*|OUTPUT_SOURCE_AUDIO_DEV=$OUTPUT_SOURCE_AUDIO_DEV|g" ./vars.env
+fi
+
+existing_volume=$(grep -oP '^INPUT_SINK_VOLUME=\K.*' ./vars.env 2>/dev/null)
+existing_volume="${existing_volume:-100}"
+read -p "Enter sink volume percentage [$existing_volume]: " sink_volume
+sink_volume="${sink_volume:-$existing_volume}"
+sed -i "s|INPUT_SINK_VOLUME=.*|INPUT_SINK_VOLUME=$sink_volume|g" ./vars.env
+# Add if missing
+if ! grep -q '^INPUT_SINK_VOLUME=' ./vars.env; then
+    echo "INPUT_SINK_VOLUME=$sink_volume" >> ./vars.env
 fi
 
 

@@ -2,17 +2,19 @@
 
 sleep 1
 
-if ! pactl list short sources | grep -q "\.echo-cancel"; then
-  pactl load-module module-echo-cancel
-fi
 CARD_PROFILE=$(perl /opt/portal/detect-card-profile.pl)
 CARD_NAME=$(echo "$CARD_PROFILE" | cut -f1)
 PROFILE_NAME=$(echo "$CARD_PROFILE" | cut -f2)
 echo "Card profile set: $CARD_NAME -> $PROFILE_NAME"
 # Derive sink name from card name + profile suffix (e.g. output:hdmi-stereo -> hdmi-stereo)
 SINK_SUFFIX=${PROFILE_NAME#output:}
-echo "Setting default sink: ${CARD_NAME}.${SINK_SUFFIX}.echo-cancel"
-pactl set-default-sink "${CARD_NAME}.${SINK_SUFFIX}.echo-cancel"
+# Load echo-cancel for this sink if it doesn't exist yet
+EXPECTED_SINK="${CARD_NAME}.${SINK_SUFFIX}.echo-cancel"
+if ! pactl list short sinks | grep -q "$EXPECTED_SINK"; then
+    pactl load-module module-echo-cancel
+fi
+echo "Setting default sink: $EXPECTED_SINK"
+pactl set-default-sink "$EXPECTED_SINK"
 
 echo "F2 Con Portal - Version 0.1.1"
 echo "Copyright Jan 2026 Two Ferrets Co."

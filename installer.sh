@@ -5,6 +5,14 @@ if [[ $EUID -ne 0 ]]; then
    exit 1
 fi
 
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR"
+
+if [[ "$SCRIPT_DIR" == "/opt/portal" ]]; then
+    echo "ERROR: Do not run the installer from /opt/portal. Run it from the source directory."
+    exit 1
+fi
+
 echo "F2 Con Portal - Version 0.1.1"
 echo "Copyright Jan 2026 Two Ferrets Co."
 echo "Written by Anyah Maize (ana@missingtextures.net)"

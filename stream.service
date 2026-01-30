@@ -3,6 +3,8 @@ Description=Media Stream Service
 DefaultDependencies=no
 After=multi-user.target network-online.target pulseaudio.service
 Wants=network-online.target pulseaudio.service
+Conflicts=shutdown.target
+Before=shutdown.target
 
 
 [Service]

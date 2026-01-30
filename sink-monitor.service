@@ -3,6 +3,8 @@ Description=PulseAudio Echo-Cancel Sink Monitor
 DefaultDependencies=no
 After=multi-user.target pulseaudio.service
 Wants=pulseaudio.service
+Conflicts=shutdown.target
+Before=shutdown.target
 
 [Service]
 Type=simple

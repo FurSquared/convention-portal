@@ -5,8 +5,12 @@ sleep 1
 if ! pactl list short sources | grep -q "\.echo-cancel"; then
   pactl load-module module-echo-cancel
 fi
-pactl set-card-profile $INPUT_SOURCE_AUDIO_DEV output:hdmi-stereo
-pactl set-default-sink $INPUT_SOURCE_AUDIO_DEV.hdmi-stereo.echo-cancel
+CARD_PROFILE=$(perl /opt/portal/detect-card-profile.pl)
+CARD_NAME=$(echo "$CARD_PROFILE" | cut -f1)
+PROFILE_NAME=$(echo "$CARD_PROFILE" | cut -f2)
+# Derive sink name from card name + profile suffix (e.g. output:hdmi-stereo -> hdmi-stereo)
+SINK_SUFFIX=${PROFILE_NAME#output:}
+pactl set-default-sink "${CARD_NAME}.${SINK_SUFFIX}.echo-cancel"
 
 echo "F2 Con Portal - Version 0.1.1"
 echo "Copyright Jan 2026 Two Ferrets Co."

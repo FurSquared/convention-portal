@@ -109,7 +109,13 @@ if [[ $REPLY =~ ^[Yy]$ ]]; then
     read -p "Please enter the USB device to be used for updates: " usbname
     if ! [[ $usbname == "" ]]; then
         uuid=$(blkid -t TYPE=vfat -sUUID | grep $usbname | sed -nE 's/.* UUID="(.*?)"/\1/p')
-        echo "UUID=$uuid  /media/portal   vfat    defaults,auto,user,nofail       0       0" >> /etc/fstab
+        if [[ -z "$uuid" ]]; then
+            echo "WARNING: Could not determine UUID for $usbname, skipping fstab entry."
+        else
+            # Remove any existing /media/portal entries before adding
+            sed -i '\|/media/portal|d' /etc/fstab
+            echo "UUID=$uuid  /media/portal   vfat    defaults,auto,user,nofail       0       0" >> /etc/fstab
+        fi
     fi
 else
     usbname=""
@@ -140,7 +146,6 @@ then
 fi
 
 /bin/cp -rf ./*.service /etc/systemd/system/
-/bin/cp -rf ./*rules /etc/udev/rules.d/
 echo "Done."
 
 

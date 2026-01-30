@@ -15,7 +15,8 @@ echo "=== === === === === === === === === === === === === ==="
 
 
 echo "Installing packages..."
-DEBIAN_FRONTEND=noninteractive apt install -y iw ffmpeg btop nano v4l-utils pulseaudio pulseaudio-utils mpv git openssh-server perl passwd
+export PATH="$PATH:/sbin:/usr/sbin"
+DEBIAN_FRONTEND=noninteractive apt install -y iw ffmpeg btop nano v4l-utils pulseaudio pulseaudio-utils mpv git openssh-server perl
 
 usermod -aG pulse-access root
 systemctl restart pulseaudio.service

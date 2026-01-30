@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root"
@@ -76,7 +76,7 @@ echo "=== === === === === === === === === === === === === ==="
 
 lsblk
 read -p "Please enter the USB to be used for updates (Enter to skip): " usbname
-if ![[ $usbname == "" ]];
+if ! [[ $usbname == "" ]];
 then
     uuid=$(blkid -t TYPE=vfat -sUUID | grep $usbname | sed -nE 's/.* UUID="(.*?)"/\1/p')
     echo "UUID=$uuid  /media/portal   vfat    defaults,auto,user,nofail       0       0" >> /etc/fstab
@@ -95,7 +95,7 @@ mkdir -p /media/system
 /bin/cp -rf ./*.env /media/system
 
 mkdir -p /media/portal
-if ![[ $usbname == "" ]];
+if ! [[ $usbname == "" ]];
 then
 	if [[ $usbname == /dev/* ]];
 	then
@@ -119,7 +119,7 @@ systemctl daemon-reload
 systemctl enable --now pulseaudio.service
 systemctl enable --now stream.service
 systemctl enable --now ingest.service
-if ![[ $usbname == "" ]];
+if ! [[ $usbname == "" ]];
 then
     systemctl enable --now mount-update.service
 else

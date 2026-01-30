@@ -11,6 +11,9 @@ ExecStart=/opt/portal/streamer.sh
 EnvironmentFile=/opt/portal/vars.env
 Restart=always
 RestartSec=5s
+TimeoutStopSec=5
+KillMode=mixed
+KillSignal=SIGINT
 
 [Install]
 WantedBy=multi-user.target

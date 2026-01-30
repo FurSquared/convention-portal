@@ -85,10 +85,10 @@ echo "=== === === === === === === === === === === === === ==="
 echo "Copying files..."
 
 mkdir -p /media/system
-/bin/cp -rf ./*.sh /media/system
-/bin/cp -rf ./*.pl /media/system
-/bin/cp -rf ./*.rnnn /media/system 2>/dev/null || true
-/bin/cp -rf ./*.env /media/system
+/bin/cp -fp --remove-destination ./*.sh /media/system
+/bin/cp -fp --remove-destination ./*.pl /media/system
+/bin/cp -fp --remove-destination ./*.rnnn /media/system 2>/dev/null || true
+/bin/cp -fp --remove-destination ./*.env /media/system
 
 mkdir -p /media/portal
 if ! [[ $usbname == "" ]];
@@ -99,7 +99,7 @@ then
 	else
 		mount /dev/$usbname /media/portal
 	fi
-    cp /media/system/* /media/portal
+    /bin/cp -fp --remove-destination /media/system/* /media/portal
 fi
 
 /bin/cp -rf ./*.service /etc/systemd/system/

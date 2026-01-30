@@ -39,6 +39,8 @@ While the script is in progress, grab your RTMP details. For example
 * Stream Key: `vrcdn_{uuid}`
 * RTMP (source): `rtmp://stream.vrcdn.live/live/{username}`
 
+*Note: The RTMP source is for the other side, what will be displayed. You may use your own for local testing to confirm your voice comes through. RTMP is not exactly realtime, so expect a small delay.*
+
 Prepare a copy url for the stream: `${Server}/${Stream Key}`, in this case it would be `rtmp://ingest.vrcdn.live/live/vrcdn_{uuid}`. 
 
 Return to the install script and enter this information.
@@ -51,12 +53,12 @@ Installing Neural Networks for FFMPEG...
 Cloning into 'rnnoise-models'...
 remote: Enumerating objects: 51, done.
 remote: Total 51 (delta 0), reused 0 (delta 0), pack-reused 51 (from 1)
-Receiving objects: 100% (51/51), 4.24 MiB | 4.53 MiB/s, done.
+Receiving objects: 100% (51/51), 4.24 MiB | 5.52 MiB/s, done.
 Resolving deltas: 100% (15/15), done.
 === === === === === === === === === === === === === ===
 Configuring vars.env...
-Enter RTMP destination [rtmp://example.com/live/keyhere]: ....
-Enter RTMP source [rtmp://example.com/live]: ....
+Enter RTMP destination [rtmp://example.com/live/keyhere]: rtmp://ingest.vrcdn.live/live/...
+Enter RTMP source [rtmp://example.com/live]: rtmp://...
 
 Select the OUTPUT audio source (capture device for streaming):
 XDG_RUNTIME_DIR (/run/user/1000) is not owned by us (uid 0), but by uid 1000! (This could e.g. happen if you try to connect to a non-root PulseAudio as a root user, over the native protocol. Don't do that.)
@@ -64,9 +66,6 @@ Available sources:
   [1] alsa_input.usb-046d_HD_Pro_Webcam_C920_EDAA27BF-02.analog-stereo
   [2] alsa_input.usb-046d_HD_Pro_Webcam_C920_EDAA27BF-02.analog-stereo.echo-cancel
 Select device [2]:
-=== === === === === === === === === === === === === ===
-Configure USB drive for update files? (y/n):
-
 === === === === === === === === === === === === === ===
 Copying files...
 Done.
@@ -76,9 +75,12 @@ Created symlink '/etc/systemd/system/multi-user.target.wants/pulseaudio.service'
 Created symlink '/etc/systemd/system/multi-user.target.wants/stream.service' → '/etc/systemd/system/stream.service'.
 Created symlink '/etc/systemd/system/multi-user.target.wants/ingest.service' → '/etc/systemd/system/ingest.service'.
 Created symlink '/etc/systemd/system/multi-user.target.wants/sink-monitor.service' → '/etc/systemd/system/sink-monitor.service'.
-Mount Update Service disabled. Updates are manual.
 Done.
 === === === === === === === === === === === === === ===
 Installation Complete. A reboot is recommended.
 ```
+
+After the first install, you may see the stream come alive. However, the audio system might not be perfectly set up, so run `/sbin/reboot` as root.
+
+You may safely re-run the install script again to adjust the configuration. (it will retain the old configuration if you just press enter.)
 

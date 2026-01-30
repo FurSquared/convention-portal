@@ -6,3 +6,7 @@ dist
 convention-portal
 convention-portal.tar.gz
 
+# Downloaded during installation
+rnnoise-models
+model.rnnn
+

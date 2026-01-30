@@ -1,11 +1,9 @@
 #!/bin/sh
 
 if [[ $EUID -ne 0 ]]; then
-   echo "This script must be run as root" 
+   echo "This script must be run as root"
    exit 1
 fi
-
-# TODO: Someone PLEASE rewrite this. This is awful. It works though.
 
 echo "F2 Con Portal - Version 0.1.1"
 echo "Copyright Jan 2026 Two Ferrets Co."
@@ -22,29 +20,55 @@ if [[ ! $REPLY =~ ^[Yy]$ ]];
 then
     [[ "$0" = "$BASH_SOURCE" ]] && exit 1 || return 1
 fi
-apt install iwp ffmpeg btop nano video4linux2 pulseaudio pulseaudio-utils mpv git openssh-server perl
+apt install iw ffmpeg btop nano v4l-utils pulseaudio pulseaudio-utils mpv git openssh-server perl
 
 
 echo "=== === === === === === === === === === === === === ==="
 
 
-read -p "Is MPV preferred over FFPLAY? " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]];
-then
+echo "Configuring MPV ingester..."
+if [ -f ./ingester.sh ] && [ -f ./ingester-ffmpeg.sh ]; then
+    echo "Ingester already configured (re-run detected)"
+else
     cp ./ingester.sh ./ingester-ffmpeg.sh
-	cp ./ingester-mpv.sh ./ingester.sh
+    cp ./ingester-mpv.sh ./ingester.sh
 fi
 
-read -p "Is Neural Networks in FFMPEG wanted? " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]];
-then
+echo "Installing Neural Networks for FFMPEG..."
+if [ -d "rnnoise-models" ]; then
+    echo "rnnoise-models already exists, skipping clone..."
+else
     git clone https://github.com/GregorR/rnnoise-models
-	cp ./-models/somnolent-hogwash-2018-09-01/sh.rnnn model.rnnn
-	rm -rf rnnoise-models
-	sed -i -e 's/OUTPUT_EXTRA_ARGS=/OUTPUT_EXTRA_ARGS=-af "arnndn=m='rnnoise-models/somnolent-hogwash-2018-09-01/sh.rnnn'"/g' /vars.env
 fi
+cp ./rnnoise-models/somnolent-hogwash-2018-09-01/sh.rnnn model.rnnn
+
+
+echo "=== === === === === === === === === === === === === ==="
+
+
+echo "Configuring vars.env..."
+if [ -f ./vars.env ]; then
+    read -p "vars.env already exists. Overwrite? " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        cp ./vars.env.example ./vars.env
+    fi
+else
+    cp ./vars.env.example ./vars.env
+fi
+
+read -p "Enter RTMP destination (e.g., rtmp://example.com/live/keyhere): " rtmp_dest
+read -p "Enter RTMP source (e.g., rtmp://example.com/live): " rtmp_source
+
+if [ ! -z "$rtmp_dest" ]; then
+    sed -i "s|OUTPUT_DEST=.*|OUTPUT_DEST=$rtmp_dest|g" ./vars.env
+fi
+
+if [ ! -z "$rtmp_source" ]; then
+    sed -i "s|INPUT_SOURCE=.*|INPUT_SOURCE=$rtmp_source|g" ./vars.env
+fi
+
+sed -i "s|OUTPUT_EXTRA_ARGS=|OUTPUT_EXTRA_ARGS=-af \"arnndn=m=model.rnnn\"|g" ./vars.env
 
 
 echo "=== === === === === === === === === === === === === ==="
@@ -53,7 +77,7 @@ echo "=== === === === === === === === === === === === === ==="
 lsblk
 read -p "Please enter the USB to be used for updates (Enter to skip): " usbname
 if ![[ $usbname == "" ]];
-then 
+then
     uuid=$(blkid -t TYPE=vfat -sUUID | grep $usbname | sed -nE 's/.* UUID="(.*?)"/\1/p')
     echo "UUID=$uuid  /media/portal   vfat    defaults,auto,user,nofail       0       0" >> /etc/fstab
 fi
@@ -64,15 +88,15 @@ echo "=== === === === === === === === === === === === === ==="
 
 echo "Copying files..."
 
-mkdir /media/system
+mkdir -p /media/system
 /bin/cp -rf ./*.sh /media/system
 /bin/cp -rf ./*.pl /media/system
-/bin/cp -rf ./*.rnnn /media/system
+/bin/cp -rf ./*.rnnn /media/system 2>/dev/null || true
 /bin/cp -rf ./*.env /media/system
 
-mkdir /media/portal
+mkdir -p /media/portal
 if ![[ $usbname == "" ]];
-then 
+then
 	if [[ $usbname == /dev/* ]];
 	then
 		mount $usbname /media/portal
@@ -96,7 +120,7 @@ systemctl enable --now pulseaudio.service
 systemctl enable --now stream.service
 systemctl enable --now ingest.service
 if ![[ $usbname == "" ]];
-then 
+then
     systemctl enable --now mount-update.service
 else
 	echo "Mount Update Service disabled. Updates are manual."
@@ -109,4 +133,3 @@ echo "=== === === === === === === === === === === === === ==="
 
 
 echo "Installation Complete."
-

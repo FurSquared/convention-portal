@@ -2,3 +2,7 @@ vars.env
 *.swp
 dist
 
+# Build folder and package
+convention-portal
+convention-portal.tar.gz
+

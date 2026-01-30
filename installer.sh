@@ -17,6 +17,9 @@ echo "=== === === === === === === === === === === === === ==="
 echo "Installing packages..."
 DEBIAN_FRONTEND=noninteractive apt install -y iw ffmpeg btop nano v4l-utils pulseaudio pulseaudio-utils mpv git openssh-server perl
 
+usermod -aG pulse-access root
+systemctl restart pulseaudio.service
+
 
 echo "=== === === === === === === === === === === === === ==="
 
@@ -60,6 +63,21 @@ if [ ! -z "$rtmp_source" ]; then
 fi
 
 sed -i "s|OUTPUT_EXTRA_ARGS=|OUTPUT_EXTRA_ARGS=-af \"arnndn=m=model.rnnn\"|g" ./vars.env
+
+echo ""
+echo "Select the OUTPUT audio source (capture device for streaming):"
+OUTPUT_SOURCE_AUDIO_DEV=$(sg pulse-access -c "perl detect-audio.pl sources")
+echo ""
+echo "Select the INPUT audio sink (playback device for ingestion):"
+INPUT_SOURCE_AUDIO_DEV=$(sg pulse-access -c "perl detect-audio.pl sinks")
+
+if [ ! -z "$OUTPUT_SOURCE_AUDIO_DEV" ]; then
+    sed -i "s|OUTPUT_SOURCE_AUDIO_DEV=.*|OUTPUT_SOURCE_AUDIO_DEV=$OUTPUT_SOURCE_AUDIO_DEV|g" ./vars.env
+fi
+
+if [ ! -z "$INPUT_SOURCE_AUDIO_DEV" ]; then
+    sed -i "s|INPUT_SOURCE_AUDIO_DEV=.*|INPUT_SOURCE_AUDIO_DEV=$INPUT_SOURCE_AUDIO_DEV|g" ./vars.env
+fi
 
 
 echo "=== === === === === === === === === === === === === ==="

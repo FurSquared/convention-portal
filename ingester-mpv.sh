@@ -43,10 +43,10 @@ elif [[ "$INPUT_SOURCE" == rtsp://* ]]; then
 fi
 
 while true; do
-    mpv --vo=gpu --gpu-context=drm --drm-connector="$DRM_CONNECTOR" --ao=pulse "${MPV_EXTRA_ARGS[@]}" "$STREAM_URL"
+    mpv --no-terminal --vo=gpu --gpu-context=drm --drm-connector="$DRM_CONNECTOR" --ao=pulse "${MPV_EXTRA_ARGS[@]}" "$STREAM_URL"
     echo "Stream ended or unavailable. Showing standby image."
 
-    mpv --vo=gpu --gpu-context=drm --drm-connector="$DRM_CONNECTOR" --loop=inf --no-audio "$STANDBY_IMAGE" &
+    mpv --no-terminal --vo=gpu --gpu-context=drm --drm-connector="$DRM_CONNECTOR" --loop=inf --no-audio "$STANDBY_IMAGE" &
     IMG_PID=$!
 
     FFPROBE_ARGS=(-v quiet -timeout 5000000)

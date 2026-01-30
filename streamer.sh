@@ -22,7 +22,7 @@ echo "=== === === === === === === === === === === === === ==="
 echo "Output Source Video: $OUTPUT_SOURCE_VIDEO_TYPE:$OUTPUT_SOURCE_VIDEO_DEV ($OUTPUT_SOURCE_VIDEO_RES/$OUTPUT_SOURCE_VIDEO_RATE)"
 echo "Output Source Audio: $OUTPUT_SOURCE_AUDIO_TYPE:$OUTPUT_SOURCE_AUDIO_DEV ($OUTPUT_SOURCE_AUDIO_CHANNELS/$OUTPUT_SOURCE_AUDIO_RATE)"
 echo "Output Destination: $OUTPUT_DEST : $OUTPUT_DEST_FORMAT ($OUTPUT_DEST_VIDEO_CODEC:$OUTPUT_DEST_AUDIO_CODEC)"
-ffmpeg -hide_banner -stream_loop -1 -f $OUTPUT_SOURCE_VIDEO_TYPE -video_size $OUTPUT_SOURCE_VIDEO_RES\
+ffmpeg -hide_banner -loglevel $OUTPUT_LOGLEVEL -stream_loop -1 -f $OUTPUT_SOURCE_VIDEO_TYPE -video_size $OUTPUT_SOURCE_VIDEO_RES\
  -framerate $OUTPUT_SOURCE_VIDEO_RATE -input_format mjpeg -rtbufsize 702000k -i $OUTPUT_SOURCE_VIDEO_DEV\
  -f $OUTPUT_SOURCE_AUDIO_TYPE -i $OUTPUT_SOURCE_AUDIO_DEV -map 0:v:0 -map 1:a:0 -g 30\
  -vf "scale=${OUTPUT_SOURCE_VIDEO_RES/x/:},drawtext=text='%{localtime\:%Y-%m-%d %H\:%M\:%S}':fontsize=24:fontcolor=white:borderw=2:bordercolor=black:x=(w-tw-10):y=10"\

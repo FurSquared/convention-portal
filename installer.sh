@@ -30,6 +30,7 @@ systemctl daemon-reload
 
 usermod -aG pulse-access root
 systemctl restart pulseaudio.service
+sg pulse-access -c "pactl load-module module-echo-cancel"
 
 
 echo "=== === === === === === === === === === === === === ==="

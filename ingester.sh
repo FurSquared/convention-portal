@@ -17,6 +17,7 @@ pactl set-default-sink "$BASE_SINK"
 # Load echo-cancel for this sink if it doesn't exist yet
 if ! pactl list short sinks | grep -q "$EXPECTED_SINK"; then
     pactl load-module module-echo-cancel
+    sleep 1
 fi
 
 echo "Setting default sink: $EXPECTED_SINK"
@@ -28,5 +29,38 @@ echo "Written by Anyah Maize (ana@missingtextures.net)"
 echo ""
 echo "=== === === === === === === === === === === === === ==="
 echo "Input Source: $INPUT_SOURCE"
-ffplay -hide_banner -autoexit "$INPUT_SOURCE"
-echo 'Output Stopped.'
+pactl set-sink-volume 0 "${INPUT_SINK_VOLUME:-100}%"
+echo "Sink volume: ${INPUT_SINK_VOLUME:-100}%"
+DRM_CONNECTOR=$(perl /opt/portal/detect.pl)
+STANDBY_IMAGE="/opt/portal/stream-offline.jpg"
+
+# Handle rtspt:// (RTSP over TCP) and rtsp:// URLs
+MPV_EXTRA_ARGS=("--stream-lavf-o=timeout=10000000" "--demuxer-readahead-secs=0" "--cache=no" "--demuxer-lavf-o=rw_timeout=5000000" "--demuxer-lavf-o=stimeout=5000000" "--script=/opt/portal/quit-if-no-data.lua")
+STREAM_URL="$INPUT_SOURCE"
+if [[ "$INPUT_SOURCE" == rtspt://* ]]; then
+    STREAM_URL="rtsp://${INPUT_SOURCE#rtspt://}"
+    MPV_EXTRA_ARGS+=(--rtsp-transport=tcp)
+elif [[ "$INPUT_SOURCE" == rtsp://* ]]; then
+    MPV_EXTRA_ARGS+=(--rtsp-transport=tcp)
+fi
+
+while true; do
+    mpv --no-terminal --vo=gpu --gpu-context=drm --drm-connector="$DRM_CONNECTOR" --ao=pulse "${MPV_EXTRA_ARGS[@]}" "$STREAM_URL"
+    echo "Stream ended or unavailable. Showing standby image."
+
+    mpv --no-terminal --vo=gpu --gpu-context=drm --drm-connector="$DRM_CONNECTOR" --loop=inf --no-audio "$STANDBY_IMAGE" &
+    IMG_PID=$!
+
+    FFPROBE_ARGS=(-v quiet -print_format json -show_streams)
+    if [[ "$STREAM_URL" == rtsp://* ]]; then
+        FFPROBE_ARGS+=(-rtsp_transport tcp)
+    fi
+    while ! timeout 5 ffprobe "${FFPROBE_ARGS[@]}" "$STREAM_URL"; do
+	echo "Attempted to test stream."
+        sleep 5
+    done
+
+    echo "Stream is back online."
+    kill $IMG_PID 2>/dev/null
+    wait $IMG_PID 2>/dev/null
+done
